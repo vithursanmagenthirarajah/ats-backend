@@ -15,7 +15,7 @@ export function createServer() {
 
   app.use('/api/auth', authRoutes);
   app.use('/api/jobs', jobsRoutes);
-  app.use('/api', questionsRoutes); // /api/:jobId/questions
+  app.use('/api/jobs', questionsRoutes); // /api/:jobId/questions
   app.use('/api/applications', applicationsRoutes);
   app.use('/api/public', publicRoutes);
 
