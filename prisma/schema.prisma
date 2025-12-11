@@ -1,0 +1,94 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  jobs         Job[]
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+model Job {
+  id             Int             @id @default(autoincrement())
+  title          String
+  description    String
+  location       String?
+  employmentType EmploymentType
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  createdById    Int
+  createdBy      User            @relation(fields: [createdById], references: [id])
+
+  questions      JobQuestion[]
+  applications   Application[]
+}
+
+enum QuestionType {
+  TEXT
+  TEXTAREA
+  NUMBER
+  SINGLE_SELECT
+  MULTI_SELECT
+}
+
+model JobQuestion {
+  id         Int          @id @default(autoincrement())
+  jobId      Int
+  job        Job          @relation(fields: [jobId], references: [id])
+  label      String
+  fieldKey   String
+  type       QuestionType
+  isRequired Boolean       @default(false)
+  options    Json?
+  order      Int           @default(0)
+
+  answers    ApplicationAnswer[]
+}
+
+enum ApplicationStatus {
+  NEW
+  SHORTLISTED
+  INTERVIEWING
+  OFFER
+  HIRED
+  REJECTED
+}
+
+model Application {
+  id              Int                 @id @default(autoincrement())
+  jobId           Int
+  job             Job                 @relation(fields: [jobId], references: [id])
+  candidateName   String
+  candidateEmail  String
+  candidatePhone  String?
+  status          ApplicationStatus   @default(NEW)
+  createdAt       DateTime            @default(now())
+
+  answers         ApplicationAnswer[]
+}
+
+model ApplicationAnswer {
+  id             Int          @id @default(autoincrement())
+  applicationId  Int
+  application    Application  @relation(fields: [applicationId], references: [id])
+  jobQuestionId  Int
+  jobQuestion    JobQuestion  @relation(fields: [jobQuestionId], references: [id])
+
+  value          String
+}
